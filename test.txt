@@ -1,0 +1,30 @@
+
+
+data modify entity A transformation set value [1f,0f,0f,0f,0f,1f,0f,0f,0f,0f,1f,0f,0f,0f,0f,X]
+data get entity A transformation.scale[0]
+-> 1/X
+
+data modify entity A transformation set value [1f,0f,0f,X,0f,1f,0f,0f,0f,0f,1f,0f,0f,0f,0f,Y]
+data get entity A transformation.translation[0]
+-> X/Y
+
+data modify entity A transformation set value [X,Y,0f,0f,Y,X,0f,0f,0f,0f,0f,0f,0f,0f,0f,1f]
+data get entity A transformation.scale[0]
+-> X+Y
+data get entity A transformation.scale[1]
+-> X-Y
+※加減算は精度落ちる
+
+※乗算は逆数と除算の組み合わせで一応可能
+
+
+data modify entity A transformation set value [X,0f,0f,0f,Y,0f,0f,0f,Z,0f,0f,0f,0f,0f,0f,1f]
+data get entity A transformation.scale[0]
+-> sqrt(X^2+Y^2+Z^2)
+
+data modify entity @e[type=minecraft:item_display,limit=1] transformation set value [1f,0f,0f,0f,0f,1f,0f,0f,0f,0f,1f,0f,0f,0f,0f,1f]
+
+data modify entity @e[type=minecraft:item_display,limit=1] transformation set value [Xf,0f,0f,0f,Yf,0f,0f,0f,0f,0f,0f,0f,0f,0f,0f,1f]
+
+
+{left_rotation:[0f,0f,0f,1f],right_rotation:[0f,0f,0f,1f],scale:[1f,1f,1f],translation:[0f,0f,0f]}
