@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer'
 import { affin, rotation, rotation2affin } from "../matrix";
 import { IGolemancyAnimation, IGolemancyModel, ModelID, PartID, TextureID, state } from "./interface";
 import { JavaModel, JavaElement, JavaCoordinate, JavaFace, JavaUV, JavaTextureID } from "./javaModel";
@@ -11,6 +12,7 @@ import {
     BlockbenchTexture,
     BlockbenchRotation,
 } from "./blockbenchModel";
+import { base64ToBuffer } from '../../util/b64';
 
 class PartIDmap {
     head: number = 0;
@@ -48,8 +50,8 @@ const blockbenchRotationToAffinRotation = (rotation: BlockbenchRotation): rotati
 };
 
 export class GolemancyModel implements IGolemancyModel {
-    id: ModelID;    
-    textures: { [x: TextureID]: Blob };
+    id: ModelID;
+    textures: { [x: TextureID]: Buffer };
     animaions: IGolemancyAnimation[];
 
     private partIDMap = new PartIDmap();
@@ -68,18 +70,17 @@ export class GolemancyModel implements IGolemancyModel {
             blockbenchModel.textures
         );
 
-        blockbenchModel.elements;
+        this.textures = this.constructTextures(blockbenchModel.textures);
+
         // TODO: animationの読み込み
         this.animaions = [];
-        // TODO: texturesの読み込み
-        this.textures = {};
     }
 
     applyState(state: state): { [x: PartID]: affin }{
         return {};
     };
 
-    constructJavaModels(
+    private constructJavaModels(
         elements: BlockbenchElement[],
         resolution: BlockbenchResolution,
         textures: BlockbenchTexture[]
@@ -118,7 +119,13 @@ export class GolemancyModel implements IGolemancyModel {
         return Object.fromEntries(elements.map(constructJavaModel));
     };
 
-    exportJavaModel = (textures: { [x: TextureID]: string }) => {
+    private constructTextures(textures:BlockbenchTexture[]):{ [x: TextureID]: Buffer }{
+        const entries = textures.map( texture => [texture.id,base64ToBuffer(texture.source)])
+
+        return Object.fromEntries(entries)
+    }
+
+    exportJavaModel(textures: { [x: TextureID]: string }){
         Object.entries(textures).forEach(([k,v]) => {
             this.textureMap[k] = v;
         });

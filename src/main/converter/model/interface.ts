@@ -20,6 +20,6 @@ export interface IGolemancyModel {
     id: ModelID;
     exportJavaModel: (textures: { [x: TextureID]: string }) => { [x: PartID]: JavaModel };
     applyState: (state: state) => { [x: PartID]: affin };
-    textures: { [x: TextureID]: Blob };
+    textures: { [x: TextureID]: Buffer };
     animaions: IGolemancyAnimation[];
 }

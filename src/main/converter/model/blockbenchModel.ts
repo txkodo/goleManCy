@@ -189,7 +189,6 @@ export type BlockbenchModel = {
     resolution: BlockbenchResolution;
     elements: BlockbenchElement[];
     outliner: BlockbenchOutliner;
-    // TODO: texturesの型定義
-    textures: [];
+    textures: BlockbenchTexture[];
     animations: BlockbenchAnimation[];
 };
