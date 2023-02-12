@@ -54,13 +54,3 @@ export const IDENTITY_AFFIN = [
     0,1,0,0,
     0,0,1,0,
 ] as affin
-
-const a1 = [
-    1,0,0,1,
-    0,1,0,1,
-    0,0,1,1
-] as affin
-
-const r = affinMul(a1,a1)
-
-console.log(r)
