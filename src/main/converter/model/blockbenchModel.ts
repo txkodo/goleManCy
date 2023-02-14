@@ -3,7 +3,8 @@ import { Brand } from "../brand";
 export type BlockbenchOutlineUUID = Brand<string, "BlockbenchOutlineUUID">;
 export type BlockbenchUV = Brand<[number, number, number, number], "BlockbenchUV">;
 export type BlockbenchCoordinate = Brand<[number, number, number], "BlockbenchCoordinate">;
-export type BlockbenchRotation = Brand<[number, number, number], "BlockbenchRotation">;
+export type BlockbenchElementRotation = Brand<[number, number, number], "BlockbenchElementRotation">;
+export type BlockbenchOutlinerRotation = Brand<[number, number, number], "BlockbenchGroupRotation">;
 export type BlockbenchTextureID = Brand<string, "BlockbenchTextureID">;
 
 export type BlockbenchFace = {
@@ -21,7 +22,7 @@ export type BlockbenchElement = {
     autouv: number;
     color: number;
     origin: BlockbenchCoordinate;
-    rotation?: BlockbenchRotation
+    rotation?: BlockbenchElementRotation
     faces: {
         north?: BlockbenchFace;
         east?: BlockbenchFace;
@@ -34,10 +35,10 @@ export type BlockbenchElement = {
     uuid: string;
 };
 
-export type BlockbenchOutliner = (
-    | {
+export type BlockbenchOutliner = {
           name: string;
           origin: BlockbenchCoordinate;
+          rotation?: BlockbenchOutlinerRotation,
           color: number;
           uuid: BlockbenchOutlineUUID;
           export: boolean;
@@ -46,10 +47,8 @@ export type BlockbenchOutliner = (
           locked: boolean;
           visibility: boolean;
           autouv: number;
-          children: BlockbenchOutliner;
+          children: (BlockbenchOutliner|string)[];
       }
-    | string
-)[];
 
 export type BlockbenchKeyframe = {
     channel: "rotation" | "position" | "scale";
@@ -188,7 +187,7 @@ export type BlockbenchModel = {
     unhandled_root_fields: {};
     resolution: BlockbenchResolution;
     elements: BlockbenchElement[];
-    outliner: BlockbenchOutliner;
+    outliner: (BlockbenchOutliner|string)[];
     textures: BlockbenchTexture[];
     animations: BlockbenchAnimation[];
 };

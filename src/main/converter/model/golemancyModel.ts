@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer'
-import { affin, rotation, rotation2affin } from "../matrix";
+import { affin, position, rotation, rotation2affin, scale } from "../matrix";
 import { IGolemancyAnimation, IGolemancyModel, ModelID, PartID, TextureID, state } from "./interface";
 import { JavaModel, JavaElement, JavaCoordinate, JavaFace, JavaUV, JavaTextureID } from "./javaModel";
 import {
@@ -10,9 +10,9 @@ import {
     BlockbenchResolution,
     BlockbenchUV,
     BlockbenchTexture,
-    BlockbenchRotation,
+    BlockbenchElementRotation,
 } from "./blockbenchModel";
-import { base64ToBuffer } from '../../util/b64';
+import { base64ToBuffer } from '../util/b64';
 
 class PartIDmap {
     head: number = 0;
@@ -45,9 +45,15 @@ const blockbenchUVToJavaUV = (uv: BlockbenchUV, resolution: BlockbenchResolution
     ] as JavaUV;
 };
 
-const blockbenchRotationToAffinRotation = (rotation: BlockbenchRotation): rotation => {
+const blockbenchRotationToAffinRotation = (rotation: BlockbenchElementRotation): rotation => {
     return [...rotation] as rotation;
 };
+
+type GolemancyPartState = {
+    rotation: rotation
+    position: position
+    scale: scale
+}
 
 export class GolemancyModel implements IGolemancyModel {
     id: ModelID;
@@ -57,18 +63,14 @@ export class GolemancyModel implements IGolemancyModel {
     private partIDMap = new PartIDmap();
     private javaModel: { [x: PartID]: JavaModel };
     private textureMap: { [x: TextureID]: string };
-    private partAffinMap: { [id: PartID]: affin } = {};
+    private partStateMap: { [id: PartID]: GolemancyPartState } = {};
 
     constructor(blockbenchModel: BlockbenchModel) {
         this.id = blockbenchModel.model_identifier as ModelID;
 
         this.textureMap = {};
 
-        this.javaModel = this.constructJavaModels(
-            blockbenchModel.elements,
-            blockbenchModel.resolution,
-            blockbenchModel.textures
-        );
+        this.javaModel = this.constructJavaModels(blockbenchModel);
 
         this.textures = this.constructTextures(blockbenchModel.textures);
 
@@ -80,11 +82,12 @@ export class GolemancyModel implements IGolemancyModel {
         return {};
     };
 
-    private constructJavaModels(
-        elements: BlockbenchElement[],
-        resolution: BlockbenchResolution,
-        textures: BlockbenchTexture[]
-    ): { [x: PartID]: JavaModel }{
+    private constructJavaModels( model: BlockbenchModel ): { [x: PartID]: JavaModel }{
+        const textures = model.textures
+        const resolution = model.resolution
+        const elements = model.elements
+        const outliner = model.outliner
+
         const constructJavaFace = (face: BlockbenchFace): JavaFace => {
             // HACK: as as
             const texture = textures[face.texture].id as string as JavaTextureID;
@@ -96,7 +99,7 @@ export class GolemancyModel implements IGolemancyModel {
             const elem: JavaElement = {
                 from: blockbenchCoordinateToJavaCoordinate(element.from),
                 to: blockbenchCoordinateToJavaCoordinate(element.from),
-                faces: Object.fromEntries(
+                faces: Object.fromEntries( 
                     Object.entries(element.faces).map(([k, face]) => [k, constructJavaFace(face)])
                 ),
             };
@@ -107,11 +110,16 @@ export class GolemancyModel implements IGolemancyModel {
                 texture_size: [0, 0],
             };
 
-            const rot = element.rotation ?? ([0, 0, 0] as BlockbenchRotation);
-            let affin = rotation2affin(blockbenchRotationToAffinRotation(rot));
+            const rot = element.rotation ?? ([0, 0, 0] as BlockbenchElementRotation);
+
+            const partState:GolemancyPartState = {
+               rotation:blockbenchRotationToAffinRotation(rot),
+               position:[0,0,0] as position,
+               scale:[0,0,0] as scale
+            }
 
             const id = this.partIDMap.getPartID(element.uuid);
-            this.partAffinMap[id] = affin;
+            this.partStateMap[id] = partState;
 
             return [id, result];
         };
